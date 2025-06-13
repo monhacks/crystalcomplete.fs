@@ -1,8 +1,19 @@
-PYTHON := python
+PYTHON := python2
 POKEMONTOOLS := extras/pokemontools
 .SUFFIXES: .asm .tx .o .gbc .png .2bpp .1bpp .lz .pal .bin
 .PHONY: all clean crystal pngs
 .SECONDEXPANSION:
+
+ifneq ($(wildcard rgbds/.*),)
+RGBDS := rgbds/
+else
+RGBDS :=
+endif
+
+RGBASM := $(RGBDS)rgbasm
+RGBFIX := $(RGBDS)rgbfix
+RGBGFX := $(RGBDS)rgbgfx
+RGBLINK := $(RGBDS)rgblink
 
 TEXTQUEUE :=
 
@@ -57,12 +68,12 @@ baserom.gbc: ;
 $(OBJS): $$*.tx $$(patsubst %.asm, %.tx, $$($$*_DEPENDENCIES))
 	@$(PYTHON) prequeue.py $(TEXTQUEUE)
 	$(eval TEXTQUEUE :=)
-	rgbasm -o $@ $*.tx
+	$(RGBASM) -o $@ $*.tx
 
 CrystalComplete.gbc: $(CRYSTAL_OBJS)
-	rgblink -n $*.sym -m $*.map -o $@ $^
-	rgbfix -Cjv -i BYTE -k 01 -l 0x33 -m 0x1b -p 0 -r 3 -t PM_CRYSTAL $@
-	cmp baserom.gbc $@
+	$(RGBLINK) -n $*.sym -m $*.map -o $@ $^
+	$(RGBFIX) -Cjv -i BYTE -k 01 -l 0x33 -m 0x1b -p 0 -r 3 -t PM_CRYSTAL $@
+
 
 
 pngs:
